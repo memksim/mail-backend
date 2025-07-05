@@ -36,10 +36,10 @@ func PostMail(c *gin.Context, db *sql.DB) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Пользователь не найден"})
 		return
 	} else {
-		closeCursor(cursor)
+		CloseCursor(cursor)
 	}
 
-	defer closeCursor(cursor)
+	defer CloseCursor(cursor)
 
 	result, err := db.Exec(
 		"INSERT INTO mails (id, sender_email, recipient_email, title, body, is_bookmark, is_read, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -99,10 +99,4 @@ func PostUser(c *gin.Context, db *sql.DB) {
 	}
 
 	c.JSON(http.StatusOK, newUser)
-}
-
-func closeCursor(cursor *sql.Rows) {
-	if err := cursor.Close(); err != nil {
-		log.Fatal("Ошибка закрытия курсора БД:", err)
-	}
 }

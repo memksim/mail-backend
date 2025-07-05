@@ -32,6 +32,10 @@ func setupRouter() {
 		handler.PostUser(context, db)
 	})
 
+	router.GET("/user", func(context *gin.Context) {
+		handler.GetUserByEmail(context, db)
+	})
+
 	err := router.Run("localhost:8080")
 	if err != nil {
 		log.Fatal(err)
