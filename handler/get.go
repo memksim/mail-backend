@@ -1,52 +1,43 @@
 package handler
 
 import (
+	"database/sql"
 	"github.com/gin-gonic/gin"
+	"log"
 	"mail/model"
-	"time"
+	"net/http"
 )
 
-func GetMails(c *gin.Context) {
-	c.IndentedJSON(200, mails)
-}
+func GetMails(c *gin.Context, db *sql.DB) {
+	cursor, err := db.Query("SELECT * FROM mails")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Ошибка сервера при получении данных",
+		})
 
-var mails = [3]model.Mail{
-	{
-		Id: 1,
-		Sender: model.User{
-			Id:        51,
-			FirstName: "Ozon",
-		},
-		Title:      "Выгода сегодня!",
-		Body:       "Купите товары по выгодной цене",
-		Time:       time.Date(2025, time.July, 1, 12, 14, 00, 00, time.UTC).UnixMilli(),
-		IsRead:     false,
-		IsBookmark: false,
-	},
-	{
-		Id: 2,
-		Sender: model.User{
-			Id:        17,
-			FirstName: "Максим",
-			LastName:  "Косенко",
-		},
-		Title:      "Оставил замечания",
-		Body:       "Оставил замечания по пр, надо править",
-		Time:       time.Date(2025, time.July, 4, 22, 17, 00, 00, time.UTC).UnixMilli(),
-		IsRead:     false,
-		IsBookmark: true,
-	},
-	{
-		Id: 3,
-		Sender: model.User{
-			Id:        12,
-			FirstName: "Катя",
-			LastName:  "Косенко",
-		},
-		Title:      "Привет!",
-		Body:       "Привет! Как дела?",
-		Time:       time.Date(2025, time.July, 5, 10, 11, 00, 00, time.UTC).UnixMilli(),
-		IsRead:     true,
-		IsBookmark: false,
-	},
+		log.Fatal("Ошибка запроса к БД:", err)
+		return
+	}
+
+	defer func(cursor *sql.Rows) {
+		if err := cursor.Close(); err != nil {
+			log.Fatal("Ошибка закрытия курсора БД:", err)
+		}
+	}(cursor)
+
+	var mails []model.Mail
+	for cursor.Next() {
+		var mail model.Mail
+		if err := cursor.Scan(&mail); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Ошибка чтения данных",
+			})
+
+			log.Fatal("Ошибка чтения данных:", err)
+			return
+		}
+		mails = append(mails, mail)
+	}
+
+	c.IndentedJSON(http.StatusOK, mails)
 }

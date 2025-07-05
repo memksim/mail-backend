@@ -2,7 +2,8 @@ package model
 
 type Mail struct {
 	Id         int64  `json:"id"`
-	Sender     User   `json:"sender"`
+	Sender     string `json:"sender_email"`
+	Recipient  string `json:"recipient_email"`
 	Title      string `json:"title"`
 	Body       string `json:"body"`
 	IsBookmark bool   `json:"is_bookmark"`
