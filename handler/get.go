@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
+	"mail/config"
 	"mail/model"
 	"net/http"
 )
 
-func GetMails(c *gin.Context, db *sql.DB) {
-	cursor, err := db.Query("SELECT * FROM mails")
+func GetReceivedMails(c *gin.Context, db *sql.DB) {
+	cursor, err := db.Query("SELECT * FROM mails where recipient_email = ?", config.CurrentUser.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Ошибка сервера при получении данных",
@@ -29,7 +30,43 @@ func GetMails(c *gin.Context, db *sql.DB) {
 	for cursor.Next() {
 		var mail model.Mail
 
-		if err := cursor.Scan(&mail); err != nil {
+		if err := cursor.Scan(&mail.Id, &mail.Sender, &mail.Recipient, &mail.Title, &mail.Body, &mail.IsBookmark, &mail.IsRead, &mail.Time); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Ошибка чтения данных",
+			})
+
+			log.Fatal("Ошибка чтения данных:", err)
+			return
+		}
+
+		mails = append(mails, mail)
+	}
+
+	c.IndentedJSON(http.StatusOK, mails)
+}
+
+func GetSentMails(c *gin.Context, db *sql.DB) {
+	cursor, err := db.Query("SELECT * FROM mails where sender_email = ?", config.CurrentUser.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Ошибка сервера при получении данных",
+		})
+
+		log.Fatal("Ошибка запроса к БД:", err)
+		return
+	}
+
+	defer func(cursor *sql.Rows) {
+		if err := cursor.Close(); err != nil {
+			log.Fatal("Ошибка закрытия курсора БД:", err)
+		}
+	}(cursor)
+
+	var mails []model.Mail
+	for cursor.Next() {
+		var mail model.Mail
+
+		if err := cursor.Scan(&mail.Id, &mail.Sender, &mail.Recipient, &mail.Title, &mail.Body, &mail.IsBookmark, &mail.IsRead, &mail.Time); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Ошибка чтения данных",
 			})
@@ -56,7 +93,7 @@ func GetUserByEmail(c *gin.Context, db *sql.DB) {
 		log.Fatal("Не удалось получить данные о пользователях: ", err)
 	}
 
-	var users = make([]model.User, 1)
+	var users []model.User
 	for cursor.Next() {
 		var user model.User
 

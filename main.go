@@ -20,8 +20,12 @@ func main() {
 func setupRouter() {
 	router = gin.Default()
 
-	router.GET("/mails", func(context *gin.Context) {
-		handler.GetMails(context, db)
+	router.GET("/receivedMails", func(context *gin.Context) {
+		handler.GetReceivedMails(context, db)
+	})
+
+	router.GET("/sentMails", func(context *gin.Context) {
+		handler.GetSentMails(context, db)
 	})
 
 	router.POST("/mail", func(context *gin.Context) {
