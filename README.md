@@ -28,7 +28,7 @@ mail-backend/
 | PATCH  | /readMail            | Mark email as read               |
 
 #### Example: Sending an Email
-```
+``` http
 curl -X POST http://localhost:8080/mail \
   -H "Content-Type: application/json" \
   -d '{
