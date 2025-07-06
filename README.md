@@ -1,5 +1,4 @@
 mail-backend is a simple server-side backend for the [Mail](https://github.com/Gram-git/Mail) mobile app.
-The server is written in Go, uses the Gin framework, and stores data in a SQLite database.
 
 #### Stack
 - Go 1.24+
@@ -28,7 +27,7 @@ mail-backend/
 | PATCH  | /readMail            | Mark email as read               |
 
 #### Example: Sending an Email
-``` http
+```
 curl -X POST http://localhost:8080/mail \
   -H "Content-Type: application/json" \
   -d '{
