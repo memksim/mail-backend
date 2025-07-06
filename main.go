@@ -40,6 +40,14 @@ func setupRouter() {
 		handler.GetUserByEmail(context, db)
 	})
 
+	router.PATCH("/bookmarkMail", func(context *gin.Context) {
+		handler.BookmarkMail(context, db)
+	})
+
+	router.PATCH("/readMail", func(context *gin.Context) {
+		handler.ReadMail(context, db)
+	})
+
 	err := router.Run("localhost:8080")
 	if err != nil {
 		log.Fatal(err)
